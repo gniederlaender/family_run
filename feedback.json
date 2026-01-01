@@ -1,0 +1,18 @@
+{
+  "feedback_items": [
+    {
+      "id": "example-1",
+      "type": "feature",
+      "status": "open",
+      "priority": "medium",
+      "title": "Example: Add ability to edit past week entries",
+      "description": "Users want to be able to correct mistakes in past entries",
+      "created_at": "2026-01-02",
+      "notes": "This is an example feedback item. Delete or modify as needed."
+    }
+  ],
+  "metadata": {
+    "last_updated": "2026-01-02",
+    "version": "1.0"
+  }
+}
