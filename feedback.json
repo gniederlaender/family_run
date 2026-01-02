@@ -3,16 +3,28 @@
     {
       "id": "example-1",
       "type": "feature",
-      "status": "open",
+      "status": "done",
       "priority": "medium",
       "title": "Example: Add ability to edit past week entries",
       "description": "Users want to be able to correct mistakes in past entries",
       "created_at": "2026-01-02",
-      "notes": "This is an example feedback item. Delete or modify as needed."
+      "notes": "This is an example feedback item. Delete or modify as needed.",
+      "completion_notes": "Completed by agent in run 20260102_002710",
+      "completed_at": "2026-01-02T00:28:43.472179"
+    },
+    {
+      "id": "pwa-icon-001",
+      "type": "feature",
+      "status": "open",
+      "priority": "medium",
+      "title": "Add PWA icon - running pixel-man",
+      "description": "Implement a web app icon for the family_run application featuring a running pixel-man. When users create a home screen icon on iPhone (or any device), this icon should automatically show up. This requires: 1) Creating icon image files in multiple sizes (192x192, 512x512, apple-touch-icon), 2) Adding a manifest.json file for PWA support, 3) Adding appropriate meta tags to the HTML, 4) The icon design should be a simple pixel-art style running person that fits the app's theme",
+      "created_at": "2026-01-02",
+      "notes": "Icon should be simple, recognizable, and work well at small sizes. Purple/blue color scheme to match the app gradient."
     }
   ],
   "metadata": {
-    "last_updated": "2026-01-02",
+    "last_updated": "2026-01-02T00:28:43.472192",
     "version": "1.0"
   }
 }
