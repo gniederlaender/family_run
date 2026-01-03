@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 DATA_FILE = 'data.json'
+FEEDBACK_FILE = 'feedback.json'
 FAMILY_MEMBERS = ['Gabor', 'Petia', 'David']
 
 
@@ -36,6 +37,20 @@ def save_data(data):
     """Save data to JSON file."""
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
+
+
+def load_feedback():
+    """Load feedback from JSON file."""
+    if not os.path.exists(FEEDBACK_FILE):
+        return {'feedback_items': []}
+    with open(FEEDBACK_FILE, 'r') as f:
+        return json.load(f)
+
+
+def save_feedback(feedback):
+    """Save feedback to JSON file."""
+    with open(FEEDBACK_FILE, 'w') as f:
+        json.dump(feedback, f, indent=2)
 
 
 def get_week_display(week_key):
@@ -122,6 +137,85 @@ def add_run():
     save_data(data)
 
     return jsonify({'success': True, 'week': current_week})
+
+
+@app.route('/admin')
+def admin():
+    """Render the admin page for managing agent tasks."""
+    return render_template('admin.html')
+
+
+@app.route('/api/feedback', methods=['GET'])
+def get_feedback():
+    """Get all feedback items."""
+    feedback = load_feedback()
+    return jsonify(feedback)
+
+
+@app.route('/api/feedback', methods=['POST'])
+def add_feedback():
+    """Add a new feedback item."""
+    feedback = load_feedback()
+
+    new_item = {
+        'id': f"task-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+        'type': request.json.get('type', 'feature'),
+        'status': 'open',
+        'priority': request.json.get('priority', 'medium'),
+        'title': request.json.get('title', ''),
+        'description': request.json.get('description', ''),
+        'created_at': datetime.now().isoformat()
+    }
+
+    if not new_item['title']:
+        return jsonify({'error': 'Title is required'}), 400
+
+    feedback['feedback_items'].append(new_item)
+    save_feedback(feedback)
+
+    return jsonify({'success': True, 'item': new_item})
+
+
+@app.route('/api/feedback/<item_id>', methods=['PUT'])
+def update_feedback(item_id):
+    """Update a feedback item."""
+    feedback = load_feedback()
+
+    item = next((i for i in feedback['feedback_items'] if i['id'] == item_id), None)
+    if not item:
+        return jsonify({'error': 'Item not found'}), 404
+
+    # Update allowed fields
+    if 'status' in request.json:
+        item['status'] = request.json['status']
+    if 'priority' in request.json:
+        item['priority'] = request.json['priority']
+    if 'title' in request.json:
+        item['title'] = request.json['title']
+    if 'description' in request.json:
+        item['description'] = request.json['description']
+
+    item['updated_at'] = datetime.now().isoformat()
+
+    save_feedback(feedback)
+
+    return jsonify({'success': True, 'item': item})
+
+
+@app.route('/api/feedback/<item_id>', methods=['DELETE'])
+def delete_feedback(item_id):
+    """Delete a feedback item."""
+    feedback = load_feedback()
+
+    original_length = len(feedback['feedback_items'])
+    feedback['feedback_items'] = [i for i in feedback['feedback_items'] if i['id'] != item_id]
+
+    if len(feedback['feedback_items']) == original_length:
+        return jsonify({'error': 'Item not found'}), 404
+
+    save_feedback(feedback)
+
+    return jsonify({'success': True})
 
 
 if __name__ == '__main__':
