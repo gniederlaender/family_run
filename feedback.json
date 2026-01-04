@@ -23,6 +23,15 @@
       "notes": "Icon should be simple, recognizable, and work well at small sizes. Purple/blue color scheme to match the app gradient.",
       "completion_notes": "Completed by agent in run 20260103_181803",
       "completed_at": "2026-01-03T18:21:13.859801"
+    },
+    {
+      "id": "task-20260103-231323",
+      "type": "feature",
+      "status": "open",
+      "priority": "medium",
+      "title": "Configure Email",
+      "description": "Please implement the email configuration for family run.\n\nEMAIL_HOST=smtp.gmx.at\nEMAIL_PORT=587\nEMAIL_SECURE=false\nEMAIL_USER=gabor.niederlaender@gmx.at\n\nI will add the password later",
+      "created_at": "2026-01-03T23:13:23.058527"
     }
   ],
   "metadata": {
