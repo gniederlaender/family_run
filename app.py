@@ -2,8 +2,10 @@ from flask import Flask, render_template, request, jsonify
 import json
 import os
 from datetime import datetime, timedelta
+from config import Config
 
 app = Flask(__name__)
+app.config.from_object(Config)
 
 DATA_FILE = 'data.json'
 FEEDBACK_FILE = 'feedback.json'
