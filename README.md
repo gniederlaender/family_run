@@ -63,3 +63,21 @@ Data is stored in `data.json` in the following format:
 ```
 
 Each week uses ISO format (YYYY-WW), and each family member has an array of run distances in km.
+
+## Production Deployment
+
+The application is deployed using PM2 and Gunicorn. Configuration is in `ecosystem.config.js`.
+
+To apply configuration changes:
+```bash
+pm2 delete family-run
+pm2 start ecosystem.config.js
+pm2 save
+```
+
+Current production settings:
+- Timeout: 300 seconds (prevents worker timeout errors)
+- Graceful timeout: 30 seconds
+- Keep-alive: 5 seconds
+- Log level: warning (reduces noise from invalid bot requests)
+- Workers: 2

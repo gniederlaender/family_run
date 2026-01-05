@@ -7,6 +7,9 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# Configure request timeout handling
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max request size
+
 DATA_FILE = 'data.json'
 FEEDBACK_FILE = 'feedback.json'
 FAMILY_MEMBERS = ['Gabor', 'Petia', 'David']
@@ -62,6 +65,24 @@ def get_week_display(week_key):
     first_day = datetime.strptime(f'{year}-W{week}-1', '%Y-W%W-%w')
     last_day = first_day + timedelta(days=6)
     return f"{first_day.strftime('%b %d')} - {last_day.strftime('%b %d, %Y')}"
+
+
+@app.errorhandler(413)
+def request_entity_too_large(error):
+    """Handle request entity too large error."""
+    return jsonify({'error': 'Request entity too large'}), 413
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    """Handle bad request error."""
+    return jsonify({'error': 'Bad request'}), 400
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle internal server error."""
+    return jsonify({'error': 'Internal server error'}), 500
 
 
 @app.route('/')
