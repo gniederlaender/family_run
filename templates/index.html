@@ -21,54 +21,98 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/family_run/static/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/family_run/static/icon-512.png">
     <style>
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: white;
+            --card-shadow: rgba(0,0,0,0.1);
+            --text-primary: #333;
+            --text-secondary: #555;
+            --text-tertiary: #999;
+            --form-bg: #f8f9fa;
+            --border-color: #ddd;
+            --highlight-color: #667eea;
+            --highlight-hover: #5568d3;
+            --success-bg: #f0f9f4;
+            --current-week-bg: #fff3cd;
+            --hover-bg: #f8f9fa;
+        }
+
+        body.dark-mode {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: #2d2d44;
+            --card-shadow: rgba(0,0,0,0.3);
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #707070;
+            --form-bg: #1f1f2e;
+            --border-color: #444;
+            --highlight-color: #7c8fe5;
+            --highlight-hover: #6a7cd6;
+            --success-bg: #1a3328;
+            --current-week-bg: #3d3520;
+            --hover-bg: #3a3a52;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+               background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+               min-height: 100vh; padding: 20px; transition: background 0.3s ease; }
         .container { max-width: 1000px; margin: 0 auto; }
         h1 { color: white; text-align: center; margin-bottom: 30px; font-size: 2.5em; }
-        h2 { color: #333; margin-bottom: 20px; font-size: 1.5em; }
-        h3 { color: #555; margin-bottom: 15px; font-size: 1.2em; }
-        .current-week { background: white; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .current-week h2 { text-align: center; color: #667eea; }
-        #current-week-display { color: #764ba2; }
-        .add-run-form { background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        h2 { color: var(--text-primary); margin-bottom: 20px; font-size: 1.5em; }
+        h3 { color: var(--text-secondary); margin-bottom: 15px; font-size: 1.2em; }
+        .current-week { background: var(--card-bg); border-radius: 12px; padding: 30px; margin-bottom: 30px;
+                        box-shadow: 0 4px 6px var(--card-shadow); transition: background 0.3s ease; }
+        .current-week h2 { text-align: center; color: var(--highlight-color); }
+        #current-week-display { color: var(--highlight-color); }
+        .add-run-form { background: var(--form-bg); border-radius: 8px; padding: 20px; margin: 20px 0; transition: background 0.3s ease; }
         #run-form { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
         .form-group { flex: 1; min-width: 150px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; }
-        .form-group select, .form-group input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;
-                                                font-size: 16px; transition: border-color 0.3s; }
-        .form-group select:focus, .form-group input:focus { outline: none; border-color: #667eea; }
-        button[type="submit"] { padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 6px;
-                                font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; }
-        button[type="submit"]:hover { background: #5568d3; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--text-secondary); }
+        .form-group select, .form-group input { width: 100%; padding: 10px; border: 2px solid var(--border-color);
+                                                border-radius: 6px; font-size: 16px; transition: border-color 0.3s;
+                                                background: var(--card-bg); color: var(--text-primary); }
+        .form-group select:focus, .form-group input:focus { outline: none; border-color: var(--highlight-color); }
+        button[type="submit"] { padding: 10px 30px; background: var(--highlight-color); color: white; border: none;
+                                border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;
+                                transition: background 0.3s; }
+        button[type="submit"]:hover { background: var(--highlight-hover); }
         #message { margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; font-weight: 500; }
         #message.success { background: #d4edda; color: #155724; }
         #message.error { background: #f8d7da; color: #721c24; }
         .current-summary { margin-top: 30px; }
         .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
-        .summary-card { background: white; border: 3px solid #ddd; border-radius: 8px; padding: 20px; text-align: center; transition: all 0.3s; }
-        .summary-card.has-run { border-color: #28a745; background: #f0f9f4; }
-        .member-name { font-weight: 600; font-size: 1.1em; color: #333; margin-bottom: 10px; }
+        .summary-card { background: var(--card-bg); border: 3px solid var(--border-color); border-radius: 8px;
+                        padding: 20px; text-align: center; transition: all 0.3s; }
+        .summary-card.has-run { border-color: #28a745; background: var(--success-bg); }
+        .member-name { font-weight: 600; font-size: 1.1em; color: var(--text-primary); margin-bottom: 10px; }
         .member-status { font-size: 2em; margin: 10px 0; }
         .summary-card.has-run .member-status { color: #28a745; }
-        .summary-card:not(.has-run) .member-status { color: #999; }
-        .member-km { font-size: 1.2em; color: #667eea; font-weight: 600; min-height: 1.5em; }
-        .history { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .summary-card:not(.has-run) .member-status { color: var(--text-tertiary); }
+        .member-km { font-size: 1.2em; color: var(--highlight-color); font-weight: 600; min-height: 1.5em; }
+        .history { background: var(--card-bg); border-radius: 12px; padding: 30px;
+                   box-shadow: 0 4px 6px var(--card-shadow); transition: background 0.3s ease; }
         #history-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        #history-table thead { background: #667eea; color: white; }
+        #history-table thead { background: var(--highlight-color); color: white; }
         #history-table th { padding: 15px; text-align: left; font-weight: 600; }
-        #history-table td { padding: 15px; border-bottom: 1px solid #eee; }
-        #history-table tbody tr:hover { background: #f8f9fa; }
-        .current-week-row { background: #fff3cd !important; }
+        #history-table td { padding: 15px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); }
+        #history-table tbody tr:hover { background: var(--hover-bg); }
+        .current-week-row { background: var(--current-week-bg) !important; }
         .week-cell { font-weight: 500; }
-        .badge { display: inline-block; background: #667eea; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; margin-left: 8px; }
+        .badge { display: inline-block; background: var(--highlight-color); color: white; padding: 2px 8px;
+                 border-radius: 4px; font-size: 0.75em; margin-left: 8px; }
         .member-cell { text-align: center; font-weight: 500; }
         .member-cell.has-run { color: #28a745; }
-        .member-cell.no-run { color: #999; }
+        .member-cell.no-run { color: var(--text-tertiary); }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .admin-link { color: white; text-decoration: none; padding: 8px 16px; background: rgba(255,255,255,0.2);
                       border-radius: 6px; font-weight: 500; font-size: 0.9em; transition: background 0.3s; }
         .admin-link:hover { background: rgba(255,255,255,0.3); }
+        .dark-mode-toggle { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px;
+                            border-radius: 6px; cursor: pointer; font-size: 1.2em; transition: background 0.3s; }
+        .dark-mode-toggle:hover { background: rgba(255,255,255,0.3); }
         @media (max-width: 768px) {
             body { padding: 10px; }
             h1 { font-size: 2em; }
@@ -86,7 +130,10 @@
     <div class="container">
         <div class="header">
             <h1>🏃 Family Run Tracker</h1>
-            <a href="/family_run/admin" class="admin-link">🤖 Agent Tasks</a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="dark-mode-toggle" id="dark-mode-toggle" aria-label="Toggle dark mode">🌙</button>
+                <a href="/family_run/admin" class="admin-link">🤖 Agent Tasks</a>
+            </div>
         </div>
 
         <!-- Current Week Section -->
@@ -282,8 +329,27 @@
             }
         });
 
+        // Dark mode functionality
+        function initDarkMode() {
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.textContent = '☀️';
+            }
+
+            darkModeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                const isNowDark = document.body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isNowDark);
+                darkModeToggle.textContent = isNowDark ? '☀️' : '🌙';
+            });
+        }
+
         // Load data on page load
         loadData();
+        initDarkMode();
     </script>
 </body>
 </html>
