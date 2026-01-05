@@ -70,10 +70,15 @@ The application is deployed using PM2 and Gunicorn. Configuration is in `ecosyst
 
 To apply configuration changes:
 ```bash
-pm2 delete family-run
-pm2 start ecosystem.config.js
+# Method 1: Using the restart script (recommended)
+./restart_app.sh
+
+# Method 2: Using PM2 commands directly
+pm2 start ecosystem.config.js --update-env
 pm2 save
 ```
+
+Note: Simply using `pm2 restart family-run` will NOT reload the configuration from ecosystem.config.js. You must use one of the methods above to ensure configuration changes are applied.
 
 Current production settings:
 - Timeout: 300 seconds (prevents worker timeout errors)
