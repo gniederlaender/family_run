@@ -22,12 +22,29 @@ errorlog = "-"
 class ShutdownErrorFilter(logging.Filter):
     """Filter out benign 'Error handling request (no URI read)' messages during shutdown."""
 
+    def __init__(self):
+        super().__init__()
+        self._suppressing_traceback = False
+
     def filter(self, record):
         # Suppress "Error handling request (no URI read)" errors
         # These occur during graceful shutdowns and are not actual errors
         message = record.getMessage()
 
+        # Start suppressing when we see the error header
         if "Error handling request" in message and "no URI read" in message:
+            self._suppressing_traceback = True
+            return False
+
+        # Continue suppressing traceback lines and SystemExit
+        if self._suppressing_traceback:
+            # Stop suppressing after SystemExit or Worker exiting message
+            if "SystemExit:" in message or "Worker exiting" in message:
+                self._suppressing_traceback = False
+                # Also suppress these final messages
+                if "SystemExit:" in message:
+                    return False
+            # Suppress all messages while in traceback mode
             return False
 
         # Suppress SystemExit messages that occur during normal shutdown
