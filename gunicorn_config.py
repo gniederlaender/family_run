@@ -25,11 +25,21 @@ class ShutdownErrorFilter(logging.Filter):
     def filter(self, record):
         # Suppress "Error handling request (no URI read)" errors
         # These occur during graceful shutdowns and are not actual errors
-        if "Error handling request" in record.getMessage() and "no URI read" in record.getMessage():
+        message = record.getMessage()
+
+        if "Error handling request" in message and "no URI read" in message:
             return False
+
         # Suppress SystemExit messages that occur during normal shutdown
-        if "SystemExit: 0" in record.getMessage() or "SystemExit: 1" in record.getMessage():
+        if "SystemExit: 0" in message or "SystemExit: 1" in message:
             return False
+
+        # Check exception info for SystemExit exceptions
+        if record.exc_info:
+            exc_type, exc_value, exc_tb = record.exc_info
+            if exc_type is SystemExit:
+                return False
+
         return True
 
 def post_worker_init(worker):
