@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import os
+import signal
 from datetime import datetime, timedelta
 from config import Config
 
@@ -9,6 +10,13 @@ app.config.from_object(Config)
 
 # Configure request timeout handling
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max request size
+
+# Graceful handling of worker timeouts
+def handle_timeout(signum, frame):
+    """Handle timeout gracefully without logging unnecessary errors."""
+    raise TimeoutError("Request timeout")
+
+signal.signal(signal.SIGALRM, handle_timeout)
 
 DATA_FILE = 'data.json'
 FEEDBACK_FILE = 'feedback.json'
