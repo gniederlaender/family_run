@@ -36,6 +36,12 @@ class ShutdownErrorFilter(logging.Filter):
             self._suppressing_traceback = True
             return False
 
+        # Also start suppressing on "Traceback (most recent call last):" lines
+        # that appear after shutdown-related errors
+        if "Traceback (most recent call last):" in message:
+            self._suppressing_traceback = True
+            return False
+
         # Continue suppressing traceback lines and SystemExit
         if self._suppressing_traceback:
             # Stop suppressing after SystemExit or Worker exiting message
