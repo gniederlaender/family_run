@@ -84,5 +84,22 @@ Current production settings:
 - Timeout: 300 seconds (prevents worker timeout errors)
 - Graceful timeout: 30 seconds
 - Keep-alive: 5 seconds
-- Log level: warning (reduces noise from invalid bot requests)
+- Log level: error (configured in gunicorn_config.py)
 - Workers: 2
+- Error filtering: Suppresses benign "Error handling request (no URI read)" messages during graceful shutdowns
+
+### Troubleshooting PM2 Configuration Issues
+
+If error logs show issues that should be filtered (like "Error handling request (no URI read)"), verify that PM2 is using the correct configuration:
+
+```bash
+# Check current PM2 configuration
+pm2 describe family-run
+
+# Look for "script args" - it should show: app:app -c gunicorn_config.py
+# If it shows hardcoded args like --bind, --workers, etc., the config file is not being used
+
+# To fix: restart with the ecosystem config file
+pm2 restart ecosystem.config.js
+pm2 save
+```
