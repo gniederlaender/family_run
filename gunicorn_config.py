@@ -42,8 +42,16 @@ class ShutdownErrorFilter(logging.Filter):
 
         return True
 
+def when_ready(server):
+    """Configure logging when server is ready."""
+    # Add filter to suppress benign shutdown errors
+    error_logger = logging.getLogger("gunicorn.error")
+    for handler in error_logger.handlers:
+        handler.addFilter(ShutdownErrorFilter())
+
 def post_worker_init(worker):
     """Configure worker after initialization."""
     # Add filter to suppress benign shutdown errors
-    for handler in logging.getLogger("gunicorn.error").handlers:
+    error_logger = logging.getLogger("gunicorn.error")
+    for handler in error_logger.handlers:
         handler.addFilter(ShutdownErrorFilter())
