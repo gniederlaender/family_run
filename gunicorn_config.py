@@ -18,29 +18,43 @@ loglevel = "error"
 accesslog = "-"
 errorlog = "-"
 
+# Global state for tracking shutdown tracebacks across filter instances
+_in_shutdown_traceback = False
+
 # Custom error log filter to suppress benign shutdown errors
 class ShutdownErrorFilter(logging.Filter):
     """Filter out benign 'Error handling request (no URI read)' messages during shutdown."""
 
     def filter(self, record):
+        global _in_shutdown_traceback
+
         # Suppress "Error handling request (no URI read)" errors
         # These occur during graceful shutdowns and are not actual errors
         message = record.getMessage()
 
         # Check if this is the specific error we want to suppress
-        # This error includes the traceback in the exc_info, so we suppress the entire record
         if "Error handling request" in message and "no URI read" in message:
+            _in_shutdown_traceback = True
             return False
+
+        # If we're in a shutdown traceback, suppress all lines until we hit the end
+        if _in_shutdown_traceback:
+            # Check if this is the end of the traceback (SystemExit or Worker exiting)
+            if "SystemExit:" in message or "Worker exiting" in message:
+                _in_shutdown_traceback = False
+                return False
+            # Suppress all traceback lines
+            if any(pattern in message for pattern in [
+                "Traceback (most recent call last)",
+                "File \"/opt/family_run/venv/lib/python3.12/site-packages/gunicorn/",
+                "    ",  # Indented traceback lines (code lines and file paths)
+                "^^^^^",  # Python 3.12 error markers
+            ]):
+                return False
 
         # Suppress SystemExit messages that occur during normal shutdown
         if "SystemExit: 0" in message or "SystemExit: 1" in message:
             return False
-
-        # Suppress traceback lines that are part of the shutdown error
-        if "Traceback (most recent call last)" in message and hasattr(record, 'exc_text'):
-            # Check if the exception text contains shutdown-related errors
-            if record.exc_text and ("SystemExit: 0" in record.exc_text or "no URI read" in str(record.exc_text)):
-                return False
 
         # Check exception info for SystemExit exceptions during shutdown
         if record.exc_info:
