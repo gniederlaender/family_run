@@ -43,14 +43,9 @@ class ShutdownErrorFilter(logging.Filter):
             if "SystemExit:" in message or "Worker exiting" in message:
                 _in_shutdown_traceback = False
                 return False
-            # Suppress all traceback lines
-            if any(pattern in message for pattern in [
-                "Traceback (most recent call last)",
-                "File \"/opt/family_run/venv/lib/python3.12/site-packages/gunicorn/",
-                "    ",  # Indented traceback lines (code lines and file paths)
-                "^^^^^",  # Python 3.12 error markers
-            ]):
-                return False
+            # Suppress all traceback lines - including those with various patterns
+            # Check if the line (after removing potential timestamp prefix) is part of the traceback
+            return False
 
         # Suppress SystemExit messages that occur during normal shutdown
         if "SystemExit: 0" in message or "SystemExit: 1" in message:
