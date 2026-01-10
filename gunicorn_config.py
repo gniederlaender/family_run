@@ -44,6 +44,11 @@ class ShutdownErrorFilter(logging.Filter):
             _in_shutdown_traceback = True
             return False
 
+        # Detect the start of a traceback during shutdown - this appears before the error message
+        if _shutdown_in_progress and "Traceback (most recent call last)" in message:
+            _in_shutdown_traceback = True
+            return False
+
         # If we're in a shutdown traceback, suppress all lines until we hit the end
         if _in_shutdown_traceback:
             # Check if this is the end of the traceback (SystemExit or Worker exiting)
