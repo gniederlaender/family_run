@@ -34,23 +34,19 @@ class ShutdownErrorFilter(logging.Filter):
     def filter(self, record):
         message = record.getMessage()
 
-        # Suppress "Error handling request (no URI read)" - this is a benign shutdown error
-        # This error ONLY occurs during shutdown when a worker is interrupted mid-request
-        if "Error handling request" in message and "no URI read" in message:
-            ShutdownErrorFilter._in_traceback = True
-            return False
-
-        # Suppress the traceback that follows the shutdown error
-        if "Traceback (most recent call last)" in message and ShutdownErrorFilter._in_traceback:
-            return False
-
-        # Suppress traceback lines - they contain file paths and line numbers
+        # First check if we're already in a traceback (from previous log records)
         if ShutdownErrorFilter._in_traceback:
             # Check for end of traceback patterns
             if "sys.exit" in message.lower() or "SystemExit" in message:
                 ShutdownErrorFilter._in_traceback = False
                 return False
             # Suppress this line (it's part of the traceback)
+            return False
+
+        # Suppress "Error handling request (no URI read)" - this is a benign shutdown error
+        # This error ONLY occurs during shutdown when a worker is interrupted mid-request
+        if "Error handling request" in message and "no URI read" in message:
+            ShutdownErrorFilter._in_traceback = True
             return False
 
         # Suppress standalone SystemExit messages
