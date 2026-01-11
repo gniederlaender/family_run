@@ -19,64 +19,49 @@ loglevel = "error"
 accesslog = "-"
 errorlog = "-"
 
-# Global state for tracking shutdown tracebacks across filter instances
-_in_shutdown_traceback = False
-_shutdown_in_progress = False
-
 # Custom error log filter to suppress benign shutdown errors
 class ShutdownErrorFilter(logging.Filter):
-    """Filter out benign 'Error handling request (no URI read)' messages during shutdown."""
+    """Filter out benign 'Error handling request (no URI read)' messages during shutdown.
+
+    This error occurs when gunicorn workers are interrupted during request handling,
+    typically during graceful shutdown. It's not a real error and can be safely suppressed.
+    """
+
+    # Class-level state to track if we're in a shutdown traceback
+    # Note: This works within a single worker process
+    _in_traceback = False
 
     def filter(self, record):
-        global _in_shutdown_traceback, _shutdown_in_progress
-
-        # Get the message
         message = record.getMessage()
 
-        # Detect when shutdown is in progress
-        if "Handling signal: int" in message or "Handling signal: term" in message:
-            _shutdown_in_progress = True
-
-        # Suppress "Error handling request (no URI read)" errors
-        # These occur during graceful shutdowns and are not actual errors
-        # Check if this is the specific error we want to suppress
+        # Suppress "Error handling request (no URI read)" - this is a benign shutdown error
+        # This error ONLY occurs during shutdown when a worker is interrupted mid-request
         if "Error handling request" in message and "no URI read" in message:
-            _in_shutdown_traceback = True
+            ShutdownErrorFilter._in_traceback = True
             return False
 
-        # Detect the start of a traceback during shutdown - this appears before the error message
-        if _shutdown_in_progress and "Traceback (most recent call last)" in message:
-            _in_shutdown_traceback = True
+        # Suppress the traceback that follows the shutdown error
+        if "Traceback (most recent call last)" in message and ShutdownErrorFilter._in_traceback:
             return False
 
-        # If we're in a shutdown traceback, suppress all lines until we hit the end
-        if _in_shutdown_traceback:
-            # Check if this is the end of the traceback (SystemExit or Worker exiting)
-            if "SystemExit:" in message or "Worker exiting" in message:
-                _in_shutdown_traceback = False
+        # Suppress traceback lines - they contain file paths and line numbers
+        if ShutdownErrorFilter._in_traceback:
+            # Check for end of traceback patterns
+            if "sys.exit" in message.lower() or "SystemExit" in message:
+                ShutdownErrorFilter._in_traceback = False
                 return False
-            # Suppress all traceback lines - including those with various patterns
-            # Check if the line (after removing potential timestamp prefix) is part of the traceback
+            # Suppress this line (it's part of the traceback)
             return False
 
-        # Suppress SystemExit messages that occur during normal shutdown
+        # Suppress standalone SystemExit messages
         if "SystemExit: 0" in message or "SystemExit: 1" in message:
             return False
 
-        # Check exception info for SystemExit exceptions during shutdown
+        # Suppress SystemExit exceptions in exception info
         if record.exc_info:
             exc_type, exc_value, exc_tb = record.exc_info
             if exc_type is SystemExit:
                 return False
-            # Also check if the exception chain contains SystemExit
-            if exc_value and hasattr(exc_value, '__cause__'):
-                cause = exc_value.__cause__
-                if isinstance(cause, SystemExit):
-                    return False
-
-        # Reset shutdown flag when workers are done exiting
-        if _shutdown_in_progress and "Shutting down: Master" in message:
-            _shutdown_in_progress = False
 
         return True
 
