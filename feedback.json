@@ -55,12 +55,12 @@
       "title": "Review todo list",
       "description": "Family run agent reports every day that 2 tasks are identified and executed. I think this is a mistake (as there are no new tasks) and it only happens with the family run application. Something s ems to be wrong with todo status. ",
       "created_at": "2026-01-10T22:13:16.336524",
-      "completion_notes": "Fixed: Added missing completion_notes and completed_at fields to task-20260104-234359. All done tasks now have consistent completion metadata.",
-      "completed_at": "2026-01-11T08:10:00.000000"
+      "completion_notes": "Completed by agent in run 20260111_080001",
+      "completed_at": "2026-01-11T08:10:21.091643"
     }
   ],
   "metadata": {
-    "last_updated": "2026-01-11T08:10:00.000000",
+    "last_updated": "2026-01-11T08:10:21.091655",
     "version": "1.0"
   }
 }
