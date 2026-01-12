@@ -45,7 +45,24 @@ class ShutdownErrorFilter(logging.Filter):
 
         # Suppress "Error handling request (no URI read)" - this is a benign shutdown error
         # This error ONLY occurs during shutdown when a worker is interrupted mid-request
+        # Check the main message
         if "Error handling request" in message and "no URI read" in message:
+            ShutdownErrorFilter._in_traceback = True
+            return False
+
+        # Check if this is an exception record with the shutdown error in the exception
+        if record.exc_info:
+            exc_type, exc_value, exc_tb = record.exc_info
+            # Suppress SystemExit exceptions
+            if exc_type is SystemExit:
+                return False
+            # Check if the exception message contains the shutdown error pattern
+            if exc_value and "no URI read" in str(exc_value):
+                ShutdownErrorFilter._in_traceback = True
+                return False
+
+        # Also check the formatted exception text for this error pattern
+        if record.exc_text and "no URI read" in record.exc_text:
             ShutdownErrorFilter._in_traceback = True
             return False
 
@@ -53,17 +70,18 @@ class ShutdownErrorFilter(logging.Filter):
         if "SystemExit: 0" in message or "SystemExit: 1" in message:
             return False
 
-        # Suppress SystemExit exceptions in exception info
-        if record.exc_info:
-            exc_type, exc_value, exc_tb = record.exc_info
-            if exc_type is SystemExit:
-                return False
-
         return True
 
 def _add_filters_to_logger(logger):
-    """Add shutdown error filter to a logger and all its handlers."""
+    """Add shutdown error filter to a logger and all its handlers.
+
+    We add the filter to both the logger and its handlers to ensure
+    all log records are filtered, regardless of propagation settings.
+    Each logger/handler gets its own filter instance to maintain independent state.
+    """
+    # Create a new filter instance for the logger
     logger.addFilter(ShutdownErrorFilter())
+    # Add separate filter instances to each handler
     for handler in logger.handlers:
         handler.addFilter(ShutdownErrorFilter())
 
