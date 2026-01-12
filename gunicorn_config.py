@@ -43,6 +43,12 @@ class ShutdownErrorFilter(logging.Filter):
             # Suppress this line (it's part of the traceback)
             return False
 
+        # Suppress "Traceback (most recent call last):" - this appears after the error message
+        # but before the traceback lines when logging multi-line tracebacks
+        if message.strip() == "Traceback (most recent call last):":
+            ShutdownErrorFilter._in_traceback = True
+            return False
+
         # Suppress "Error handling request (no URI read)" - this is a benign shutdown error
         # This error ONLY occurs during shutdown when a worker is interrupted mid-request
         # Check the main message
