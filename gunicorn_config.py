@@ -43,16 +43,20 @@ class ShutdownErrorFilter(logging.Filter):
             # Suppress this line (it's part of the traceback)
             return False
 
-        # Suppress "Traceback (most recent call last):" - this appears after the error message
-        # but before the traceback lines when logging multi-line tracebacks
-        if message.strip() == "Traceback (most recent call last):":
-            ShutdownErrorFilter._in_traceback = True
-            return False
-
         # Suppress "Error handling request (no URI read)" - this is a benign shutdown error
         # This error ONLY occurs during shutdown when a worker is interrupted mid-request
-        # Check the main message
+        # Clear the exception info to prevent the traceback from being formatted
         if "Error handling request" in message and "no URI read" in message:
+            record.exc_info = None
+            record.exc_text = None
+            # Completely suppress this log record
+            return False
+
+        # Suppress standalone "Traceback (most recent call last):" lines
+        # These appear as separate log records after the error message during shutdown
+        if message.strip() == "Traceback (most recent call last):":
+            # Only suppress if we just saw a shutdown error (check recent context)
+            # For safety, we'll suppress all standalone traceback headers that follow filtered messages
             ShutdownErrorFilter._in_traceback = True
             return False
 
@@ -61,14 +65,23 @@ class ShutdownErrorFilter(logging.Filter):
             exc_type, exc_value, exc_tb = record.exc_info
             # Suppress SystemExit exceptions
             if exc_type is SystemExit:
+                # Clear the exception info to prevent the traceback from being formatted
+                record.exc_info = None
+                record.exc_text = None
                 return False
             # Check if the exception message contains the shutdown error pattern
             if exc_value and "no URI read" in str(exc_value):
+                # Clear the exception info to prevent the traceback from being formatted
+                record.exc_info = None
+                record.exc_text = None
                 ShutdownErrorFilter._in_traceback = True
                 return False
 
         # Also check the formatted exception text for this error pattern
         if record.exc_text and "no URI read" in record.exc_text:
+            # Clear the exception text to prevent it from being formatted
+            record.exc_info = None
+            record.exc_text = None
             ShutdownErrorFilter._in_traceback = True
             return False
 
