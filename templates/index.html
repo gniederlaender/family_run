@@ -88,6 +88,7 @@
                         padding: 20px; text-align: center; transition: all 0.3s; }
         .summary-card.has-run { border-color: #28a745; background: var(--success-bg); }
         .member-name { font-weight: 600; font-size: 1.1em; color: var(--text-primary); margin-bottom: 10px; }
+        .member-total { font-size: 0.85em; color: var(--text-secondary); margin-bottom: 10px; font-weight: 500; }
         .member-status { font-size: 2em; margin: 10px 0; }
         .summary-card.has-run .member-status { color: #28a745; }
         .summary-card:not(.has-run) .member-status { color: var(--text-tertiary); }
@@ -192,6 +193,7 @@
 
     <script>
         let currentWeekKey = null;
+        let memberTotals = {};
 
         // Load data and populate the page
         async function loadData() {
@@ -200,6 +202,7 @@
                 const data = await response.json();
 
                 currentWeekKey = data.current_week;
+                memberTotals = data.member_totals || {};
                 document.getElementById('current-week-display').textContent = data.current_week_display;
 
                 // Update current week summary
@@ -229,10 +232,12 @@
                 const memberData = currentWeek.members[member];
                 const totalKm = memberData.total_km;
                 const hasRun = memberData.has_run;
+                const overallTotal = memberTotals[member] || 0;
 
                 html += `
                     <div class="summary-card ${hasRun ? 'has-run' : ''}">
                         <div class="member-name">${member}</div>
+                        <div class="member-total">Total: ${overallTotal.toFixed(1)} km</div>
                         <div class="member-status">
                             ${hasRun ? '✓' : '0'}
                         </div>

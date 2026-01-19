@@ -109,6 +109,15 @@ def get_data():
     processed_data = []
     all_weeks = sorted(data.keys(), reverse=True)
 
+    # Calculate overall totals for each member
+    member_totals = {}
+    for member in FAMILY_MEMBERS:
+        total = 0
+        for week in data.keys():
+            runs = data[week].get(member, [])
+            total += sum(runs) if runs else 0
+        member_totals[member] = total
+
     for week in all_weeks:
         week_data = {
             'week': week,
@@ -131,7 +140,8 @@ def get_data():
     return jsonify({
         'weeks': processed_data,
         'current_week': current_week,
-        'current_week_display': get_week_display(current_week)
+        'current_week_display': get_week_display(current_week),
+        'member_totals': member_totals
     })
 
 
