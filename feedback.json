@@ -57,10 +57,19 @@
       "created_at": "2026-01-10T22:13:16.336524",
       "completion_notes": "Completed by agent in run 20260111_080001",
       "completed_at": "2026-01-11T08:10:21.091643"
+    },
+    {
+      "id": "task-20260118-203739",
+      "type": "feature",
+      "status": "open",
+      "priority": "medium",
+      "title": "Summen bilden",
+      "description": "Bitte bei jeder Person die Summe der insgesamt gelaufenen Kilometer darstellen. Bitte immer als oberste Reihe unter dem Namen.",
+      "created_at": "2026-01-18T20:37:39.984028"
     }
   ],
   "metadata": {
-    "last_updated": "2026-01-11T08:10:21.091655",
+    "last_updated": "2026-01-18T20:37:39.984056",
     "version": "1.0"
   }
 }
